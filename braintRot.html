@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brainrot Character Rankings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .status-indicator {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff4444;
+        }
+
+        .status-dot.connected {
+            background: #44ff44;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .vs-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .character-card {
+            flex: 1;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .character-card:hover {
+            transform: translateY(-10px);
+            border-color: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .character-card.voting {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .character-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .character-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .character-elo {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .vs-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .admin-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .admin-toggle {
+            background: #FFD700;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .admin-content {
+            display: none;
+        }
+
+        .admin-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .add-character-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .add-character-btn:hover {
+            background: #45a049;
+        }
+
+        .add-character-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .leaderboard h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .rank {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: 20px;
+            min-width: 40px;
+        }
+
+        .leaderboard-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .leaderboard-info {
+            flex: 1;
+        }
+
+        .leaderboard-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .leaderboard-elo {
+            opacity: 0.8;
+        }
+
+        .match-counter {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff4444;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .firebase-setup {
+            background: rgba(255, 255, 0, 0.1);
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .firebase-setup h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+        }
+
+        .firebase-setup code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 Brainrot Character Rankings 🧠</h1>
+        <p>Vote for your favorite brainrot character - Global Elo Rankings!</p>
+    </div>
+
+    <div class="firebase-setup" id="firebaseSetup">
+        <h3>🔧 Firebase Setup Required</h3>
+        <p><strong>To enable global rankings, follow these steps:</strong></p>
+        <ol style="margin: 15px 0; padding-left: 20px;">
+            <li>Go to <a href="https://firebase.google.com" target="_blank" style="color: #FFD700;">Firebase Console</a></li>
+            <li>Create a new project</li>
+            <li>Enable Firestore Database</li>
+            <li>Get your config object and replace the placeholder below</li>
+            <li>Set Firestore rules to allow read/write (for testing)</li>
+        </ol>
+        <p><strong>Firestore Rules (for testing):</strong></p>
+        <code>rules_version = '2';<br/>
+        service cloud.firestore {<br/>
+        &nbsp;&nbsp;match /databases/{database}/documents {<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;match /{document=**} {<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow read, write: if true;<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+        &nbsp;&nbsp;}<br/>
+        }</code>
+    </div>
+
+    <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Connecting to Firebase...</span>
+    </div>
+
+    <div class="match-counter">
+        <span id="matchCounter">Global Matches Played: 0</span>
+    </div>
+
+    <div class="game-container">
+        <div id="gameContent" class="loading">
+            Loading characters...
+        </div>
+    </div>
+
+    <div class="admin-panel">
+        <button class="admin-toggle" onclick="toggleAdmin()">🛠️ Admin Panel</button>
+        <div class="admin-content" id="adminContent">
+            <h3>Add New Character</h3>
+            <div class="form-group">
+                <label for="charName">Character Name:</label>
+                <input type="text" id="charName" placeholder="Enter character name">
+            </div>
+            <div class="form-group">
+                <label for="charImage">Image URL:</label>
+                <input type="text" id="charImage" placeholder="Enter image URL">
+            </div>
+            <button class="add-character-btn" id="addCharBtn" onclick="addCharacter()" disabled>Add Character</button>
+        </div>
+    </div>
+
+    <div class="leaderboard">
+        <h2>🏆 Global Leaderboard</h2>
+        <div id="leaderboardContainer">
+            <div class="loading">Loading rankings...</div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+
+    <script>
+        // 🔥 REPLACE THIS WITH YOUR FIREBASE CONFIG 🔥
+        // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDPhBaHyFkxM0V50imjhBdYNVItioSaynU",
+  authDomain: "brainrot-elo.firebaseapp.com",
+  projectId: "brainrot-elo",
+  storageBucket: "brainrot-elo.firebasestorage.app",
+  messagingSenderId: "448605288705",
+  appId: "1:448605288705:web:86d9649668a1e2d352c300",
+  measurementId: "G-CEFCSCB136"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+        let db;
+        let characters = [];
+        let currentPair = [];
+        let totalMatches = 0;
+        let isConnected = false;
+        let isVoting = false;
+
+        // Initialize Firebase
+        function initFirebase() {
+            try {
+                // Check if config is still placeholder
+                if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+                    updateStatus("❌ Firebase not configured", false);
+                    document.getElementById('firebaseSetup').style.display = 'block';
+                    return;
+                }
+
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                
+                updateStatus("✅ Connected to Firebase", true);
+                document.getElementById('firebaseSetup').style.display = 'none';
+                document.getElementById('addCharBtn').disabled = false;
+                
+                loadData();
+                setupRealTimeListeners();
+                
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                updateStatus(`❌ Firebase Error: ${error.message}`, false);
+            }
+        }
+
+        // Update connection status
+        function updateStatus(message, connected) {
+            document.getElementById('statusText').textContent = message;
+            document.getElementById('statusDot').className = `status-dot ${connected ? 'connected' : ''}`;
+            isConnected = connected;
+        }
+
+        // Setup real-time listeners
+        function setupRealTimeListeners() {
+            // Listen for character changes
+            db.collection('characters').onSnapshot((snapshot) => {
+                characters = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                updateLeaderboard();
+                
+                if (currentPair.length === 0) {
+                    getRandomPair();
+                }
+            });
+
+            // Listen for match count changes
+            db.collection('stats').doc('global').onSnapshot((doc) => {
+                if (doc.exists) {
+                    totalMatches = doc.data().totalMatches || 0;
+                    updateMatchCounter();
+                }
+            });
+        }
+
+        // Load initial data
+        async function loadData() {
+            try {
+                // Load characters
+                const charactersSnapshot = await db.collection('characters').get();
+                characters = charactersSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                // Load global stats
+                const statsDoc = await db.collection('stats').doc('global').get();
+                if (statsDoc.exists) {
+                    totalMatches = statsDoc.data().totalMatches || 0;
+                } else {
+                    // Initialize stats document
+                    await db.collection('stats').doc('global').set({ totalMatches: 0 });
+                }
+
+                // Initialize with default characters if none exist
+                if (characters.length === 0) {
+                    await initializeDefaultCharacters();
+                }
+
+                updateMatchCounter();
+                updateLeaderboard();
+                getRandomPair();
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                updateStatus(`❌ Error loading data: ${error.message}`, false);
+            }
+        }
+
+        // Initialize default characters
+        async function initializeDefaultCharacters() {
+            const defaultCharacters = [
+                { name: "Sigma Male", image: "/api/placeholder/200/200", elo: 1200, matches: 0 },
+                { name: "Chad", image: "/api/placeholder/200/200", elo: 1200, matches: 0 },
+                { name: "Gigachad", image: "/api/placeholder/200/200", elo: 1200, matches: 0 },
+                { name: "Skibidi Toilet", image: "/api/placeholder/200/200", elo: 1200, matches: 0 },
+                { name: "Ohio Man", image: "/api/placeholder/200/200", elo: 1200, matches: 0 }
+            ];
+
+            for (const char of defaultCharacters) {
+                await db.collection('characters').add(char);
+            }
+        }
+
+        // Calculate Elo rating change
+        function calculateElo(winnerElo, loserElo, kFactor = 32) {
+            const expectedWinner = 1 / (1 + Math.pow(10, (loserElo - winnerElo) / 400));
+            const expectedLoser = 1 / (1 + Math.pow(10, (winnerElo - loserElo) / 400));
+            
+            const newWinnerElo = Math.round(winnerElo + kFactor * (1 - expectedWinner));
+            const newLoserElo = Math.round(loserElo + kFactor * (0 - expectedLoser));
+            
+            return { winner: newWinnerElo, loser: newLoserElo };
+        }
+
+        // Get random pair of characters
+        function getRandomPair() {
+            if (characters.length < 2) {
+                document.getElementById('gameContent').innerHTML = `
+                    <div class="error">Need at least 2 characters to play! Add some characters using the admin panel.</div>
+                `;
+                return;
+            }
+
+            const shuffled = [...characters].sort(() => 0.5 - Math.random());
+            currentPair = [shuffled[0], shuffled[1]];
+            
+            displayCharacters();
+        }
+
+        // Display current character pair
+        function displayCharacters() {
+            document.getElementById('gameContent').innerHTML = `
+                <div class="vs-container">
+                    <div class="character-card" onclick="vote(0)">
+                        <img src="${currentPair[0].image}" alt="${currentPair[0].name}" class="character-image">
+                        <div class="character-name">${currentPair[0].name}</div>
+                        <div class="character-elo">Elo: ${currentPair[0].elo}</div>
+                    </div>
+                    
+                    <div class="vs-text">VS</div>
+                    
+                    <div class="character-card" onclick="vote(1)">
+                        <img src="${currentPair[1].image}" alt="${currentPair[1].name}" class="character-image">
+                        <div class="character-name">${currentPair[1].name}</div>
+                        <div class="character-elo">Elo: ${currentPair[1].elo}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Handle voting
+        async function vote(winnerIndex) {
+            if (!isConnected || isVoting) return;
+            
+            isVoting = true;
+            const cards = document.querySelectorAll('.character-card');
+            cards.forEach(card => card.classList.add('voting'));
+
+            try {
+                const loserIndex = winnerIndex === 0 ? 1 : 0;
+                const winner = currentPair[winnerIndex];
+                const loser = currentPair[loserIndex];
+
+                // Calculate new Elo ratings
+                const newRatings = calculateElo(winner.elo, loser.elo);
+                
+                // Update characters in database
+                await db.collection('characters').doc(winner.id).update({
+                    elo: newRatings.winner,
+                    matches: winner.matches + 1
+                });
+                
+                await db.collection('characters').doc(loser.id).update({
+                    elo: newRatings.loser,
+                    matches: loser.matches + 1
+                });
+                
+                // Update global match count
+                await db.collection('stats').doc('global').update({
+                    totalMatches: totalMatches + 1
+                });
+                
+                // Get new pair after a short delay
+                setTimeout(() => {
+                    getRandomPair();
+                    isVoting = false;
+                }, 1000);
+
+            } catch (error) {
+                console.error('Error updating vote:', error);
+                updateStatus(`❌ Error: ${error.message}`, false);
+                isVoting = false;
+                cards.forEach(card => card.classList.remove('voting'));
+            }
+        }
+
+        // Update match counter
+        function updateMatchCounter() {
+            document.getElementById('matchCounter').textContent = `Global Matches Played: ${totalMatches}`;
+        }
+
+        // Update leaderboard
+        function updateLeaderboard() {
+            const sorted = [...characters].sort((a, b) => b.elo - a.elo);
+            const container = document.getElementById('leaderboardContainer');
+            
+            if (sorted.length === 0) {
+                container.innerHTML = '<div class="loading">No characters yet...</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            sorted.forEach((char, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                
+                item.innerHTML = `
+                    <div class="rank">#${index + 1}</div>
+                    <img src="${char.image}" alt="${char.name}" class="leaderboard-image">
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">${char.name}</div>
+                        <div class="leaderboard-elo">Elo: ${char.elo} (${char.matches} matches)</div>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        // Toggle admin panel
+        function toggleAdmin() {
+            const content = document.getElementById('adminContent');
+            content.classList.toggle('active');
+        }
+
+        // Add new character
+        async function addCharacter() {
+            if (!isConnected) {
+                alert('Firebase not connected!');
+                return;
+            }
+
+            const name = document.getElementById('charName').value.trim();
+            const image = document.getElementById('charImage').value.trim();
+            
+            if (!name || !image) {
+                alert('Please fill in both name and image URL!');
+                return;
+            }
+            
+            // Check if character already exists
+            if (characters.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+                alert('Character with this name already exists!');
+                return;
+            }
+            
+            try {
+                await db.collection('characters').add({
+                    name: name,
+                    image: image,
+                    elo: 1200,
+                    matches: 0
+                });
+                
+                // Clear form
+                document.getElementById('charName').value = '';
+                document.getElementById('charImage').value = '';
+                
+                alert(`${name} has been added to the global rankings!`);
+                
+            } catch (error) {
+                console.error('Error adding character:', error);
+                alert('Error adding character: ' + error.message);
+            }
+        }
+
+        // Initialize when page loads
+        window.onload = function() {
+            initFirebase();
+        };
+    </script>
+</body>
+</html>
